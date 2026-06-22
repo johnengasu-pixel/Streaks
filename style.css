@@ -56,6 +56,13 @@ body.dark {
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
 
+/* The `hidden` attribute must always win, no matter what `display` value
+   a class elsewhere sets on the same element (e.g. .login-screen sets
+   display:flex, .tab-btn sets display:flex — without this rule, those
+   author styles silently override the browser's default [hidden] handling
+   and the "hidden" element stays fully visible). */
+[hidden] { display: none !important; }
+
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -532,40 +539,6 @@ body.dark .streak-flame { background: linear-gradient(135deg, #4a3318, #5c3f17);
 .cal-cell.status-red { background: #f3dede; color: var(--red); }
 body.dark .cal-cell.status-red { background: #3a2424; }
 .cal-cell.is-today { border-color: var(--blue-status); }
-
-/* Modal */
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 20, 18, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  z-index: 50;
-  animation: fade-up 200ms ease both;
-}
-.modal-card {
-  background: var(--paper-warm);
-  border-radius: var(--radius-lg);
-  padding: 26px;
-  max-width: 380px;
-  width: 100%;
-  position: relative;
-  box-shadow: var(--shadow-pop);
-}
-.modal-close {
-  position: absolute;
-  top: 12px; right: 14px;
-  background: none; border: none;
-  font-size: 1.4rem;
-  color: var(--ink-soft);
-  cursor: pointer;
-}
-.day-detail-list { list-style: none; padding: 0; margin: 16px 0; display: flex; flex-direction: column; gap: 10px; }
-.day-detail-list li { display: flex; justify-content: space-between; font-size: 0.92rem; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-.day-detail-notes-label { font-size: 0.72rem; text-transform: uppercase; color: var(--ink-soft); font-weight: 700; margin-top: 8px; }
-.day-detail-notes { margin-top: 6px; font-size: 0.9rem; line-height: 1.4; }
 
 /* ============================================================
    TABLES (leaderboard + admin)
