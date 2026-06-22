@@ -4,6 +4,14 @@
    ============================================================ */
 
 /* ---------------------------------------------------------
+   0. BOOTSTRAP REGISTRATION (must run first, before anything
+   below has a chance to throw — otherwise the login form's
+   submit listener never gets attached and the button silently
+   does nothing).
+   --------------------------------------------------------- */
+document.addEventListener("DOMContentLoaded", bootstrap);
+
+/* ---------------------------------------------------------
    1. SUPABASE SETUP
    Replace these with your own project's values from
    Supabase Dashboard → Project Settings → API.
@@ -11,7 +19,25 @@
 const SUPABASE_URL = "https://ahbuinydroqsccmmfsin.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFoYnVpbnlkcm9xc2NjbW1mc2luIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDg4NTQsImV4cCI6MjA5NzYyNDg1NH0.K5zTW8woLPHKTf_cGjylQiHZLMAxw17wT6Y3pDcWQ0w";
 
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabaseClient = null;
+
+// Wrapped in a function (instead of a top-level call) so a failure to load
+// the Supabase library from the CDN can't halt the rest of script.js from
+// running — it just leaves supabaseClient as null and we surface a clear
+// error to the user instead of a dead button.
+function initSupabase() {
+  try {
+    if (!window.supabase || typeof window.supabase.createClient !== "function") {
+      throw new Error("Supabase library not found on window — CDN script may have failed to load.");
+    }
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    return true;
+  } catch (err) {
+    console.error("Supabase failed to initialize:", err);
+    supabaseClient = null;
+    return false;
+  }
+}
 
 /* ---------------------------------------------------------
    2. STATE
@@ -137,6 +163,12 @@ async function handleLoginSubmit(e) {
 
   errorEl.hidden = true;
 
+  if (!supabaseClient) {
+    errorEl.textContent = "Could not connect to required services. Please check your internet connection and refresh the page.";
+    errorEl.hidden = false;
+    return;
+  }
+
   if (!name || !phone) {
     errorEl.textContent = "Please enter both your name and phone number.";
     errorEl.hidden = false;
@@ -146,6 +178,7 @@ async function handleLoginSubmit(e) {
   setLoading(btn, true);
   try {
     const member = await findOrCreateMember(name, phone);
+   
     currentMember = member;
     saveSession(member);
     await enterApp();
@@ -453,30 +486,8 @@ function renderCalendar() {
 
     if (key === todayStr) cell.classList.add("is-today");
 
-    if (!isFuture) {
-      cell.addEventListener("click", () => openDayModal(key, rec));
-    }
-
     grid.appendChild(cell);
   }
-}
-
-function openDayModal(key, rec) {
-  const modal = document.getElementById("day-modal");
-  const dateObj = new Date(key + "T00:00:00");
-  document.getElementById("day-modal-date").textContent =
-    dateObj.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
-
-  document.getElementById("day-detail-bible").textContent = rec?.bible_reading ? "✅ Done" : "❌ Not done";
-  document.getElementById("day-detail-prayer").textContent = rec?.prayer ? "✅ Done" : "❌ Not done";
-  document.getElementById("day-detail-activity").textContent = rec?.scout_activity ? "✅ Done" : "❌ Not done";
-  document.getElementById("day-detail-notes").textContent = rec?.notes?.trim() ? rec.notes : "No notes for this day.";
-
-  modal.hidden = false;
-}
-
-function closeDayModal() {
-  document.getElementById("day-modal").hidden = true;
 }
 
 /* ---------------------------------------------------------
@@ -729,11 +740,6 @@ function wireEvents() {
     renderCalendar();
   });
 
-  document.getElementById("day-modal-close").addEventListener("click", closeDayModal);
-  document.getElementById("day-modal").addEventListener("click", (e) => {
-    if (e.target.id === "day-modal") closeDayModal();
-  });
-
   document.getElementById("export-csv-btn").addEventListener("click", exportRecordsAsCsv);
   document.getElementById("admin-search").addEventListener("input", renderAdminTables);
   document.getElementById("admin-date-filter").addEventListener("input", renderAdminTables);
@@ -748,8 +754,21 @@ function wireEvents() {
 }
 
 async function bootstrap() {
+  // Wire up UI listeners FIRST, no matter what — so the page is always
+  // interactive even if Supabase fails to load (e.g. CDN blocked, offline).
   wireEvents();
   applyTheme(localStorage.getItem(THEME_KEY) || "light");
+
+  const ok = initSupabase();
+  if (!ok) {
+    const errorEl = document.getElementById("login-error");
+    if (errorEl) {
+      errorEl.textContent =
+        "Could not connect to required services. Please check your internet connection and refresh the page.";
+      errorEl.hidden = false;
+    }
+    return; // don't attempt session/data loading without a working client
+  }
 
   const session = loadSession();
   if (session) {
@@ -757,5 +776,3 @@ async function bootstrap() {
     await enterApp();
   }
 }
-
-document.addEventListener("DOMContentLoaded", bootstrap);
