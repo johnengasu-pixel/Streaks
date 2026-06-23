@@ -111,6 +111,18 @@ function escapeHtml(str) {
   }[c]));
 }
 
+// Builds a 1-2 letter initials string from a member's name, for the
+// leaderboard avatar badges. Falls back to "?" if name is empty/missing.
+function getInitials(name) {
+  const initials = String(name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("");
+  return initials || "?";
+}
+
 /* ---------------------------------------------------------
    4. SESSION / LOGIN
    --------------------------------------------------------- */
@@ -178,7 +190,7 @@ async function handleLoginSubmit(e) {
   setLoading(btn, true);
   try {
     const member = await findOrCreateMember(name, phone);
-   
+
     currentMember = member;
     saveSession(member);
     await enterApp();
@@ -423,10 +435,19 @@ function calcPercentages(records) {
   };
 }
 
+// Renders dashboard stats AND drives the streak-ring fill (--ring-pct),
+// the glowing circular progress indicator behind the streak number.
+// The ring fills 10% per current-streak day and caps at a full ring
+// from day 10 onward, so early streaks already show visible progress.
 function renderStats() {
   const current = calcCurrentStreak(myRecords);
   const longest = calcLongestStreak(myRecords);
   const pct = calcPercentages(myRecords);
+
+  const streakFlame = document.getElementById("streak-flame");
+  if (streakFlame) {
+    streakFlame.style.setProperty("--ring-pct", Math.min(100, current * 10));
+  }
 
   document.getElementById("current-streak-num").textContent = current;
   document.getElementById("stat-current-streak").textContent = current;
@@ -494,6 +515,9 @@ function renderCalendar() {
    9. LEADERBOARD
    --------------------------------------------------------- */
 
+// Renders the leaderboard table, including initials avatars and
+// medal/rank badges. Same data/sort logic as the original version —
+// visual markup only (lb-member wrapper + lb-avatar span added).
 async function loadLeaderboard() {
   const tbody = document.getElementById("leaderboard-body");
   try {
@@ -527,10 +551,18 @@ async function loadLeaderboard() {
     tbody.innerHTML = ranked
       .map((m, i) => {
         const isMe = currentMember && m.id === currentMember.id;
-        const rankDisplay = i < 3 ? `<span class="rank-medal">${medals[i]}</span>` : `#${i + 1}`;
+        const rankDisplay =
+          i < 3
+            ? `<span class="rank-medal">${medals[i]}</span>`
+            : `<span class="rank-num">${i + 1}</span>`;
         return `<tr class="${isMe ? "lb-row-me" : ""}">
           <td>${rankDisplay}</td>
-          <td>${escapeHtml(m.name)}${isMe ? " (you)" : ""}</td>
+          <td>
+            <div class="lb-member">
+              <span class="lb-avatar">${escapeHtml(getInitials(m.name))}</span>
+              <span>${escapeHtml(m.name)}${isMe ? " (you)" : ""}</span>
+            </div>
+          </td>
           <td>${m.streak} 🔥</td>
         </tr>`;
       })
@@ -687,8 +719,10 @@ function switchTab(tabName) {
 
 function applyTheme(theme) {
   document.body.classList.toggle("dark", theme === "dark");
-  document.getElementById("dark-toggle").querySelector(".icon-sun").hidden = theme === "dark";
-  document.getElementById("dark-toggle").querySelector(".icon-moon").hidden = theme !== "dark";
+  const toggle = document.getElementById("dark-toggle");
+  toggle.querySelector(".icon-sun").hidden = theme === "dark";
+  toggle.querySelector(".icon-moon").hidden = theme !== "dark";
+  toggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
 }
 
 function toggleTheme() {
