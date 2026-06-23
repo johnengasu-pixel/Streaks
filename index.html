@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#6D28D9" />
 <title>Raht Elementa Streaks</title>
 <meta name="description" content="Growing Daily in Faith, Prayer, and Service. Track Bible reading, prayer, and scout activities with Raht Elementa." />
 
@@ -17,10 +18,18 @@
 
 <!-- ============================================================ -->
 <!-- TRAIL BACKDROP (decorative dotted trail line, signature motif) -->
+<!-- Gradient lives in <defs> here, inside the SVG, so the CSS rule -->
+<!-- `.trail-backdrop path { stroke: url(#trail-gradient); }` works. -->
 <!-- ============================================================ -->
 <svg class="trail-backdrop" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="trail-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6D28D9" />
+      <stop offset="100%" stop-color="#FB7185" />
+    </linearGradient>
+  </defs>
   <path d="M -50 780 C 250 700, 350 850, 600 760 S 950 600, 1100 680 S 1350 500, 1500 420"
-        fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/>
+        fill="none" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/>
 </svg>
 
 <!-- ============================================================ -->
@@ -85,7 +94,7 @@
     </div>
 
     <div class="topbar-actions">
-      <button id="dark-toggle" class="icon-btn" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+      <button id="dark-toggle" class="icon-btn" type="button" aria-label="Toggle dark mode" aria-pressed="false" title="Toggle dark mode">
         <svg class="icon icon-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
         <svg class="icon icon-moon" viewBox="0 0 24 24" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
       </button>
@@ -224,21 +233,6 @@
     </div>
   </section>
 
-  <!-- Day detail modal -->
-  <div id="day-modal" class="modal-backdrop" hidden>
-    <div class="modal-card">
-      <button class="modal-close" id="day-modal-close" type="button" aria-label="Close">&times;</button>
-      <h3 id="day-modal-date">Date</h3>
-      <ul class="day-detail-list">
-        <li><span>📖 Bible Reading</span><strong id="day-detail-bible">—</strong></li>
-        <li><span>🙏 Prayer</span><strong id="day-detail-prayer">—</strong></li>
-        <li><span>🏕️ Scout Activity</span><strong id="day-detail-activity">—</strong></li>
-      </ul>
-      <p class="day-detail-notes-label">Notes</p>
-      <p id="day-detail-notes" class="day-detail-notes">No notes for this day.</p>
-    </div>
-  </div>
-
   <!-- ====================== LEADERBOARD ====================== -->
   <section id="tab-leaderboard" class="tab-panel">
     <div class="panel">
@@ -301,7 +295,7 @@
 </div>
 
 <!-- Toast / global feedback -->
-<div id="toast" class="toast" hidden></div>
+<div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
 
 <!-- Supabase client library (CDN) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
