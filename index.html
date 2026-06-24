@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#6D28D9" />
+<title>Raht Elementa Streaks</title>
+<meta name="description" content="Growing daily in faith, prayer, and service. Track Bible reading, prayer, and scout activity, build streaks, and climb the group leaderboard." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;0,700;1,500&family=Nunito+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="light">
+
+<!-- Ambient decorative trail -->
+<svg class="trail" viewBox="0 0 1440 900" preserveAspectRatio="none" aria-hidden="true">
+  <defs>
+    <linearGradient id="trail-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="100%" stop-color="#FB7185" />
+    </linearGradient>
+  </defs>
+  <path d="M -50 760 C 250 690, 360 850, 600 750 S 950 600, 1110 690 S 1360 500, 1520 410"
+        fill="none" stroke="url(#trail-grad)" stroke-width="3" stroke-dasharray="2 18" stroke-linecap="round"/>
+</svg>
+
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<!-- ============================================================ LOGIN ============================================================ -->
+<main id="login-screen" class="screen login-screen">
+  <div class="login-card">
+    <div class="emblem-wrap">
+      <svg viewBox="0 0 120 120" class="emblem" aria-hidden="true">
+        <circle cx="60" cy="60" r="54" class="em-ring"/>
+        <path d="M60 24 L60 96 M36 50 L84 50" class="em-cross" stroke-width="9" stroke-linecap="round"/>
+        <path class="em-laurel" d="M24 72 Q15 50 28 32" fill="none" stroke-width="4" stroke-linecap="round"/>
+        <path class="em-laurel" d="M96 72 Q105 50 92 32" fill="none" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <p class="eyebrow">Raht Elementa Scout Group</p>
+    <h1 class="login-title">Streaks</h1>
+    <p class="tagline">Growing daily in faith, prayer &amp; service.</p>
+
+    <!-- MEMBER LOGIN: name + phone, no password -->
+    <div id="member-login">
+      <form id="login-form" class="login-form" autocomplete="off" novalidate>
+        <label class="field">
+          <span class="field-label">Your name</span>
+          <input type="text" id="login-name" name="name" placeholder="e.g. Daniel Asante" autocomplete="name" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Phone number</span>
+          <input type="tel" id="login-phone" name="phone" inputmode="tel" placeholder="e.g. 0244 123 456" autocomplete="tel" required />
+        </label>
+        <button type="submit" id="login-btn" class="btn btn-primary btn-block">
+          <span class="btn-text">Begin / continue the journey</span>
+          <span class="spinner" hidden></span>
+        </button>
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+      </form>
+      <p class="login-foot">New here? Just enter your name and phone — your profile is created automatically and saved on this device.</p>
+      <button type="button" id="show-admin-login" class="login-link">🛡️ Administrator login</button>
+    </div>
+
+    <!-- ADMIN LOGIN: username + phone + password -->
+    <div id="admin-login" hidden>
+      <p class="login-foot admin-login-intro">🛡️ Secure administrator sign-in</p>
+      <form id="admin-form" class="login-form" autocomplete="off" novalidate>
+        <label class="field">
+          <span class="field-label">Username or name</span>
+          <input type="text" id="admin-username" placeholder="e.g. merna" autocomplete="username" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Phone number</span>
+          <input type="tel" id="admin-login-phone" inputmode="tel" placeholder="Registered phone" autocomplete="tel" required />
+        </label>
+        <label class="field">
+          <span class="field-label">Password</span>
+          <input type="password" id="admin-password" placeholder="Admin password" autocomplete="current-password" required />
+        </label>
+        <button type="submit" id="admin-login-btn" class="btn btn-primary btn-block">
+          <span class="btn-text">Secure sign-in</span>
+          <span class="spinner" hidden></span>
+        </button>
+        <p id="admin-login-error" class="form-error" role="alert" hidden></p>
+      </form>
+      <button type="button" id="show-member-login" class="login-link">← Back to member login</button>
+    </div>
+  </div>
+</main>
+
+<!-- ============================================================ APP ============================================================ -->
+<div id="app" class="screen app-shell" hidden>
+
+  <header class="topbar">
+    <div class="brand" id="brand">
+      <svg viewBox="0 0 120 120" class="emblem emblem-sm" aria-hidden="true">
+        <circle cx="60" cy="60" r="54" class="em-ring"/>
+        <path d="M60 24 L60 96 M36 50 L84 50" class="em-cross" stroke-width="9" stroke-linecap="round"/>
+      </svg>
+      <div class="brand-text"><strong>Raht Elementa</strong><span>Streaks</span></div>
+    </div>
+    <div class="topbar-actions">
+      <div class="mini-streak" id="mini-streak" title="Current streak">
+        <svg viewBox="0 0 24 24" class="flame" aria-hidden="true"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-.5-1.5-.5-2 1.5 1 3.5 3 3.5 6a6 6 0 1 1-12 0c0-5 3-7 6-12Z"/></svg>
+        <span id="mini-streak-num">0</span>
+      </div>
+      <button id="header-avatar-btn" class="avatar avatar-sm header-avatar" type="button" aria-label="Open your profile">?</button>
+      <button id="theme-toggle" class="icon-btn" type="button" aria-label="Toggle dark mode" aria-pressed="false">
+        <svg class="ic ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+        <svg class="ic ic-moon" viewBox="0 0 24 24" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- ===================== TODAY ===================== -->
+  <section id="panel-today" class="panel-screen is-active">
+    <div class="welcome">
+      <div>
+        <p class="eyebrow" id="greeting">Welcome back</p>
+        <h2 class="member-name" id="member-name">Friend</h2>
+        <p class="muted" id="today-date"></p>
+      </div>
+    </div>
+
+    <!-- Verse of the day (rotates daily) -->
+    <div class="verse-card">
+      <span class="verse-eyebrow">📖 Verse of the day</span>
+      <p class="verse-text" id="verse-text"></p>
+      <span class="verse-ref" id="verse-ref"></span>
+    </div>
+
+    <!-- Hero ring -->
+    <div class="hero-ring-wrap">
+      <div class="hero-ring" id="hero-ring" style="--pct:0">
+        <div class="ring-center">
+          <svg viewBox="0 0 24 24" class="flame-lg" aria-hidden="true"><path d="M12 2c1 3-3 4-3 8a3 3 0 0 0 6 0c0-1-.5-1.5-.5-2 1.5 1 3.5 3 3.5 6a6 6 0 1 1-12 0c0-5 3-7 6-12Z"/></svg>
+          <strong id="ring-streak">0</strong>
+          <span>day streak</span>
+        </div>
+      </div>
+      <p class="ring-caption" id="ring-caption">Complete all three today to keep the flame alive.</p>
+    </div>
+
+    <!-- Quick stats -->
+    <div class="qstats">
+      <div class="qstat"><span class="qs-val" id="qs-current">0</span><span class="qs-lab">Current 🔥</span></div>
+      <div class="qstat"><span class="qs-val" id="qs-perfect">0</span><span class="qs-lab">Perfect 🟢</span></div>
+      <div class="qstat"><span class="qs-val" id="qs-active">0</span><span class="qs-lab">Active days</span></div>
+      <div class="qstat"><span class="qs-val" id="qs-rate">0%</span><span class="qs-lab">Perfect rate</span></div>
+    </div>
+
+    <!-- Today check-in -->
+    <div class="card">
+      <div class="card-head">
+        <h3>Today's check-in</h3>
+        <span class="chip" id="today-status">Not started</span>
+      </div>
+      <div class="habits" id="today-habits">
+        <button class="habit" data-key="bible" type="button" aria-pressed="false">
+          <span class="habit-ic">📖</span>
+          <span class="habit-title">Bible Reading</span>
+          <span class="habit-state">Tap to mark done</span>
+          <span class="habit-check" aria-hidden="true">✓</span>
+        </button>
+        <button class="habit" data-key="prayer" type="button" aria-pressed="false">
+          <span class="habit-ic">🙏</span>
+          <span class="habit-title">Prayer</span>
+          <span class="habit-state">Tap to mark done</span>
+          <span class="habit-check" aria-hidden="true">✓</span>
+        </button>
+        <button class="habit" data-key="scout" type="button" aria-pressed="false">
+          <span class="habit-ic">🏕️</span>
+          <span class="habit-title">Scout Activity</span>
+          <span class="habit-state">Tap to mark done</span>
+          <span class="habit-check" aria-hidden="true">✓</span>
+        </button>
+      </div>
+      <label class="field">
+        <span class="field-label">Notes for today <span class="muted">(optional)</span></span>
+        <textarea id="today-notes" rows="3" placeholder="What did you read, pray for, or do today?"></textarea>
+      </label>
+      <button id="save-btn" class="btn btn-primary btn-block" type="button">
+        <span class="btn-text">Save today's progress</span>
+        <span class="spinner" hidden></span>
+      </button>
+      <p id="checkin-msg" class="form-success" hidden></p>
+    </div>
+
+    <!-- Last 7 days mini chart -->
+    <div class="card">
+      <div class="card-head"><h3>Last 7 days</h3><span class="muted">habits completed per day</span></div>
+      <div class="week-chart" id="week-chart"></div>
+    </div>
+  </section>
+
+  <!-- ===================== CALENDAR ===================== -->
+  <section id="panel-calendar" class="panel-screen">
+    <div class="card">
+      <div class="cal-head">
+        <button id="cal-prev" class="icon-btn" type="button" aria-label="Previous month"><svg class="ic" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+        <h3 id="cal-label">Month Year</h3>
+        <button id="cal-next" class="icon-btn" type="button" aria-label="Next month"><svg class="ic" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
+      <div class="cal-legend">
+        <span><i class="dot d-perfect"></i> 🟢 Perfect (3/3)</span>
+        <span><i class="dot d-partial"></i> 🟡 Partial (2/3)</span>
+        <span><i class="dot d-minimal"></i> 🟠 Minimal (1/3)</span>
+        <span><i class="dot d-missed"></i> 🔴 Missed (0/3)</span>
+        <span><i class="dot d-today"></i> Today</span>
+      </div>
+      <div class="cal-weekdays"><span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span></div>
+      <div id="cal-grid" class="cal-grid"></div>
+      <p class="muted cal-hint">Tap any day up to today to see the group's notes for that day.</p>
+    </div>
+
+    <!-- Group notes board for the selected day -->
+    <div class="card" id="cal-board">
+      <div class="card-head">
+        <h3>📝 Group notes</h3>
+        <span class="muted" id="cal-board-date"></span>
+      </div>
+      <div id="cal-notes" class="cal-notes"></div>
+      <button id="cal-edit-mine" class="btn btn-ghost btn-block btn-sm" type="button">✏️ Edit my check-in for this day</button>
+    </div>
+  </section>
+
+  <!-- ===================== RANKS ===================== -->
+  <section id="panel-ranks" class="panel-screen">
+    <div class="card">
+      <div class="card-head">
+        <h3>Leaderboard</h3>
+        <div class="seg" id="rank-toggle" role="tablist">
+          <button class="seg-btn is-active" data-mode="current" type="button">🔥 Active</button>
+          <button class="seg-btn" data-mode="perfect" type="button">🟢 Perfect</button>
+        </div>
+      </div>
+      <ol class="rank-list" id="rank-list"></ol>
+    </div>
+  </section>
+
+  <!-- ===================== INSIGHTS ===================== -->
+  <section id="panel-insights" class="panel-screen">
+    <div class="card">
+      <div class="card-head"><h3>Habit consistency</h3><span class="muted">all-time</span></div>
+      <div class="bars" id="habit-bars"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>This month</h3><span class="muted" id="ins-month-label"></span></div>
+      <div class="ins-grid ins-grid-4">
+        <div class="ins-cell lvl-perfect"><span class="ins-val" id="ins-perfect">0</span><span class="ins-lab">🟢 Perfect</span></div>
+        <div class="ins-cell lvl-partial"><span class="ins-val" id="ins-partial">0</span><span class="ins-lab">🟡 Partial</span></div>
+        <div class="ins-cell lvl-minimal"><span class="ins-val" id="ins-minimal">0</span><span class="ins-lab">🟠 Minimal</span></div>
+        <div class="ins-cell lvl-missed"><span class="ins-val" id="ins-missed">0</span><span class="ins-lab">🔴 Missed</span></div>
+      </div>
+      <div class="ins-rate-row">
+        <span>Active days: <strong id="ins-active">0</strong></span>
+        <span>Perfect rate: <strong id="ins-monthrate">0%</strong></span>
+      </div>
+    </div>
+    <div class="card milestone-card">
+      <div class="card-head"><h3>Next milestone</h3></div>
+      <p class="muted" id="milestone-text">Reach a 7-day streak to earn your first badge.</p>
+      <div class="milestone-track"><div class="milestone-fill" id="milestone-fill" style="width:0%"></div></div>
+      <div class="badges" id="badges"></div>
+    </div>
+  </section>
+
+  <!-- ===================== JOURNAL ===================== -->
+  <section id="panel-journal" class="panel-screen">
+    <div class="card">
+      <div class="card-head"><h3>My Journal</h3><span class="muted" id="journal-count"></span></div>
+      <input type="search" id="journal-search" class="admin-input journal-search" placeholder="Search notes, days or dates…" />
+      <div id="journal-list" class="journal-list"></div>
+    </div>
+  </section>
+
+  <!-- ===================== MORE / SETTINGS ===================== -->
+  <section id="panel-more" class="panel-screen">
+    <div class="card">
+      <div class="card-head"><h3>Profile</h3></div>
+      <div class="profile-row">
+        <button class="avatar avatar-lg avatar-editable" id="profile-avatar" type="button" aria-label="Change profile picture">?</button>
+        <div class="profile-info">
+          <strong id="profile-name">Friend</strong>
+          <span class="muted" id="profile-phone">—</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button id="edit-photo-btn" class="btn btn-secondary btn-sm" type="button">📷 Edit profile picture</button>
+        <button id="edit-name-btn" class="btn btn-ghost btn-sm" type="button">Edit name</button>
+      </div>
+      <div class="profile-mini" id="profile-mini"></div>
+      <div class="profile-links">
+        <button id="go-journal" class="btn btn-ghost btn-sm" type="button">📓 My journal</button>
+        <button id="go-achievements" class="btn btn-ghost btn-sm" type="button">🏅 Achievements</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Preferences</h3></div>
+      <div class="setting-row">
+        <div><strong>Dark mode</strong><p class="muted">Switch between light and ember-dark.</p></div>
+        <label class="switch"><input type="checkbox" id="dark-switch"><span class="slider"></span></label>
+      </div>
+      <div class="setting-row">
+        <div><strong>Daily reminder</strong><p class="muted">A notification if your check-in isn't finished by a set time.</p></div>
+        <label class="switch"><input type="checkbox" id="reminder-switch"><span class="slider"></span></label>
+      </div>
+      <div class="setting-row" id="reminder-time-row" hidden>
+        <div><strong>Reminder time</strong><p class="muted">When to nudge you each day.</p></div>
+        <input type="time" id="reminder-time" class="admin-input reminder-time" value="19:00" />
+      </div>
+    </div>
+
+    <div class="card" id="admin-card">
+      <div class="card-head">
+        <h3>Group admin</h3>
+        <div class="admin-head-actions">
+          <span class="chip is-perfect" id="admin-chip">Admin</span>
+          <button id="admin-change-pw" class="btn btn-ghost btn-sm" type="button">🔑 Password</button>
+        </div>
+      </div>
+      <div id="admin-unlocked">
+        <div class="admin-stats" id="admin-stats"></div>
+        <h4 class="admin-subhead">Group activity · last 14 days</h4>
+        <div class="admin-trend" id="admin-trend"></div>
+        <div class="admin-tools">
+          <input type="search" id="admin-search" class="admin-input" placeholder="Search name or phone…" />
+          <input type="date" id="admin-date" class="admin-input" />
+          <button id="admin-export" class="btn btn-secondary btn-sm" type="button">Export CSV</button>
+        </div>
+        <p class="muted">Members (<span id="admin-mcount">0</span>) · Records (<span id="admin-rcount">0</span>)</p>
+        <div class="table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>Date</th><th>Member</th><th>📖</th><th>🙏</th><th>🏕️</th><th>Notes</th></tr></thead>
+            <tbody id="admin-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><h3>Account</h3></div>
+      <div class="account-actions">
+        <button id="switch-btn" class="btn btn-ghost btn-block" type="button">Switch / add profile</button>
+        <button id="reset-btn" class="btn btn-danger-ghost btn-block" type="button">Reset all data on this device</button>
+        <button id="logout-btn" class="btn btn-ghost btn-block" type="button">Log out</button>
+      </div>
+    </div>
+    <p class="app-foot">Raht Elementa Streaks · Growing daily in faith, prayer &amp; service.</p>
+  </section>
+
+  <!-- Bottom navigation -->
+  <nav class="tabbar" aria-label="Sections">
+    <button class="tab is-active" data-tab="today" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg><span>Today</span></button>
+    <button class="tab" data-tab="calendar" type="button"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg><span>Calendar</span></button>
+    <button class="tab" data-tab="journal" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2Z"/><path d="M8 7h7M8 11h7"/></svg><span>Journal</span></button>
+    <button class="tab" data-tab="ranks" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 6h3a3 3 0 0 1-3 3M7 6H4a3 3 0 0 0 3 3"/></svg><span>Ranks</span></button>
+    <button class="tab" data-tab="insights" type="button"><svg class="ic" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 14l3-3 3 3 4-5"/></svg><span>Insights</span></button>
+    <button class="tab" data-tab="more" type="button"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg><span>More</span></button>
+  </nav>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-backdrop" data-close></div>
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <h3 id="modal-title">Title</h3>
+      <button class="icon-btn" id="modal-close" type="button" aria-label="Close" data-close><svg class="ic" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
